@@ -9,6 +9,7 @@ package db
 import (
 	"context"
 	"fmt"
+	"go.mongodb.org/mongo-driver/mongo/readpref"
 
 	"github.com/mongodb/mongo-tools/common/bsonutil"
 	"go.mongodb.org/mongo-driver/bson"
@@ -28,7 +29,7 @@ type NodeType string
 const (
 	Mongos     NodeType = "mongos"
 	Standalone          = "standalone"
-	ReplSet             = "replset"
+	ReplSet             = "repleset"
 	Unknown             = "unknown"
 )
 
@@ -142,6 +143,7 @@ func (sp *SessionProvider) GetNodeType() (NodeType, error) {
 	result := session.Database("admin").RunCommand(
 		context.Background(),
 		&bson.M{"ismaster": 1},
+		mopt.RunCmd().SetReadPreference(readpref.PrimaryPreferred()),
 	)
 	if result.Err() != nil {
 		return Unknown, result.Err()
